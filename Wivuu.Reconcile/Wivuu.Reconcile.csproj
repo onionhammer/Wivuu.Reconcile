@@ -3,6 +3,11 @@
   <PropertyGroup>
     <TargetFramework>netstandard2.0</TargetFramework>
     <LangVersion>latest</LangVersion>
+    <GeneratePackageOnBuild>true</GeneratePackageOnBuild>
+    <Authors>Erik O'Leary</Authors>
+    <Company>Wivuu LLC</Company>
+    <Description>.NET Reconcile two separate sequences</Description>
+    <Copyright>Wivuu LLC</Copyright>
   </PropertyGroup>
 
 </Project>
