@@ -11,9 +11,9 @@ namespace Wivuu.Reconcile.Tests
         [TestMethod]
         public void TestZipAddOnly()
         {
-            int[] sourceItems  = { 2, 4, 5 };
-            var destItems      = new List<string> { "1", "2", "3" };
-            string[] expected  = { "1", "2", "3", "4", "5" };
+            int[] sourceItems = { 2, 4, 5 };
+            var destItems     = new List<string> { "1", "2", "3" };
+            string[] expected = { "1", "2", "3", "4", "5" };
 
             destItems
                 .Reconcile(sourceItems, (src, dest) => src.ToString() == dest)
@@ -27,9 +27,9 @@ namespace Wivuu.Reconcile.Tests
         [TestMethod]
         public void TestZipAddDelete()
         {
-            int[] sourceItems  = { 2, 4, 5 };
-            var destItems      = new List<string> { "1", "2", "3" };
-            string[] expected  = { "2", "4", "5" };
+            int[] sourceItems = { 2, 4, 5 };
+            var destItems     = new List<string> { "1", "2", "3" };
+            string[] expected = { "2", "4", "5" };
 
             destItems
                 .Reconcile(sourceItems, (src, dest) => src.ToString() == dest)
@@ -45,7 +45,7 @@ namespace Wivuu.Reconcile.Tests
         public void TestZipDelete()
         {
             int[] sourceItems = { 2, 4, 5 };
-            var destItems = new List<string> { "1", "2", "3" };
+            var destItems     = new List<string> { "1", "2", "3" };
             string[] expected = { "2" };
 
             destItems
@@ -65,7 +65,7 @@ namespace Wivuu.Reconcile.Tests
 
             public TestItem(string id, string email)
             {
-                this.Id    = id;
+                this.Id = id;
                 this.Email = email;
             }
         }
@@ -74,7 +74,8 @@ namespace Wivuu.Reconcile.Tests
         public void TestZipUpdate()
         {
             var userInput = new[] { new TestItem("1", "test.user@email.com") };
-            var database  = new[] {
+            var database = new[] 
+            {
                 new TestItem("1", "test.user@emailz.com"),
                 new TestItem("2", "second.user@email.com"),
             };
@@ -87,10 +88,7 @@ namespace Wivuu.Reconcile.Tests
 
             database
                 .Reconcile(userInput, (src, dest) => src.Id == dest.Id)
-                .WithMatching((src, dest) =>
-                {
-                    dest.Email = src.Email;
-                })
+                .WithMatching((src, dest) => dest.Email = src.Email)
                 .Done();
 
             foreach (var i in expected)
@@ -100,12 +98,14 @@ namespace Wivuu.Reconcile.Tests
         [TestMethod]
         public void TestZipAddDeleteUpdate()
         {
-            var userInput = new[] {
+            var userInput = new[] 
+            {
                 new TestItem("1", "test.user@email.com"),
                 new TestItem("3", "third.user@email.com"),
             };
 
-            var database = new List<TestItem> {
+            var database = new List<TestItem>
+            {
                 new TestItem("1", "test.user@emailz.com"),
                 new TestItem("2", "second.user@email.com"),
             };
@@ -118,10 +118,7 @@ namespace Wivuu.Reconcile.Tests
 
             database
                 .Reconcile(userInput, (src, dest) => src.Id == dest.Id)
-                .WithMatching((src, dest) =>
-                {
-                    dest.Email = src.Email;
-                })
+                .WithMatching((src, dest) => dest.Email = src.Email)
                 .WithItemNotInSource(dest => database.Remove(dest))
                 .WithItemNotInDestination(source => database.Add(source))
                 .Done();
