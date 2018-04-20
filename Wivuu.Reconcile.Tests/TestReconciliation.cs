@@ -1,5 +1,6 @@
 using System;
 using System.Collections.Generic;
+using System.Diagnostics;
 using System.Linq;
 using Microsoft.VisualStudio.TestTools.UnitTesting;
 
@@ -12,13 +13,13 @@ namespace Wivuu.Reconcile.Tests
         public void TestZipAddOnly()
         {
             int[] sourceItems = { 2, 4, 5 };
-            var destItems     = new List<string> { "1", "2", "3" };
+            var destItems = new List<string> { "1", "2", "3" };
             string[] expected = { "1", "2", "3", "4", "5" };
 
             destItems
                 .Reconcile(sourceItems, (src, dest) => src.ToString() == dest)
                 .WithItemNotInDestination(src => destItems.Add(src.ToString()))
-                .Done();
+                .UpdateDestination();
 
             foreach (var i in expected)
                 Assert.IsTrue(destItems.Contains(i));
@@ -28,14 +29,14 @@ namespace Wivuu.Reconcile.Tests
         public void TestZipAddDelete()
         {
             int[] sourceItems = { 2, 4, 5 };
-            var destItems     = new List<string> { "1", "2", "3" };
+            var destItems = new List<string> { "1", "2", "3" };
             string[] expected = { "2", "4", "5" };
 
             destItems
                 .Reconcile(sourceItems, (src, dest) => src.ToString() == dest)
                 .WithItemNotInDestination(src => destItems.Add(src.ToString()))
                 .WithItemNotInSource(dest => destItems.Remove(dest))
-                .Done();
+                .UpdateDestination();
 
             foreach (var i in expected)
                 Assert.IsTrue(destItems.Contains(i));
@@ -45,18 +46,19 @@ namespace Wivuu.Reconcile.Tests
         public void TestZipDelete()
         {
             int[] sourceItems = { 2, 4, 5 };
-            var destItems     = new List<string> { "1", "2", "3" };
+            var destItems = new List<string> { "1", "2", "3" };
             string[] expected = { "2" };
 
             destItems
                 .Reconcile(sourceItems, (src, dest) => src.ToString() == dest)
                 .WithItemNotInSource(dest => destItems.Remove(dest))
-                .Done();
+                .UpdateDestination();
 
             foreach (var i in expected)
                 Assert.IsTrue(destItems.Contains(i));
         }
 
+        [DebuggerDisplay("{Id}: {Email}")]
         class TestItem
         {
             public string Id { get; }
@@ -74,7 +76,7 @@ namespace Wivuu.Reconcile.Tests
         public void TestZipUpdate()
         {
             var userInput = new[] { new TestItem("1", "test.user@email.com") };
-            var database = new[] 
+            var database = new[]
             {
                 new TestItem("1", "test.user@emailz.com"),
                 new TestItem("2", "second.user@email.com"),
@@ -89,7 +91,7 @@ namespace Wivuu.Reconcile.Tests
             database
                 .Reconcile(userInput, (src, dest) => src.Id == dest.Id)
                 .WithMatching((src, dest) => dest.Email = src.Email)
-                .Done();
+                .UpdateDestination();
 
             foreach (var i in expected)
                 Assert.IsTrue(database.Any(d => d.Email == i.Email));
@@ -98,7 +100,7 @@ namespace Wivuu.Reconcile.Tests
         [TestMethod]
         public void TestZipAddDeleteUpdate()
         {
-            var userInput = new[] 
+            var userInput = new[]
             {
                 new TestItem("1", "test.user@email.com"),
                 new TestItem("3", "third.user@email.com"),
@@ -121,10 +123,30 @@ namespace Wivuu.Reconcile.Tests
                 .WithMatching((src, dest) => dest.Email = src.Email)
                 .WithItemNotInSource(dest => database.Remove(dest))
                 .WithItemNotInDestination(source => database.Add(source))
-                .Done();
+                .UpdateDestination();
 
             foreach (var i in expected)
                 Assert.IsTrue(database.Any(d => d.Email == i.Email));
+        }
+
+        [TestMethod]
+        public void TestZipOnly()
+        {
+            var userInput = new[]
+            {
+                new TestItem("1", "test.user@email.com"),
+                new TestItem("3", "third.user@email.com"),
+            };
+
+            var database = new List<TestItem>
+            {
+                new TestItem("1", "test.user@emailz.com"),
+                new TestItem("2", "second.user@email.com"),
+            };
+
+            var result = database
+                .Reconcile(userInput, (src, dest) => src.Id == dest.Id)
+                .Zip();
         }
     }
 }

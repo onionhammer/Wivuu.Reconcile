@@ -74,7 +74,10 @@ namespace Wivuu.Reconcile
             return this;
         }
 
-        public void Done()
+        /// <summary>
+        /// Perform updates to destination
+        /// </summary>
+        public void UpdateDestination()
         {
             var destination = Destination.ToList();
 
@@ -98,6 +101,32 @@ namespace Wivuu.Reconcile
                 foreach (var dest in destination)
                     // Item exists in destination but not in source
                     WithItemNotInSourceCallback(dest);
+        }
+
+        /// <summary>
+        /// Return zipped results
+        /// </summary>
+        public IEnumerable<(TSource source, TDestination destination)> Zip()
+        {
+            var destination = Destination.ToList();
+
+            foreach (var src in Source)
+            {
+                var index = destination.FindIndex(dest => IsMatch(src, dest));
+
+                if (index >= 0)
+                {
+                    // Item exists in both sequences
+                    yield return (src, destination[index]);
+
+                    destination.RemoveAt(index);
+                }
+                else
+                    yield return (src, default);
+            }
+
+            foreach (var dest in destination)
+                yield return (default, dest);
         }
 
         #endregion
